@@ -15,7 +15,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(o =>
-    o.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
+    o.UseNpgsql(builder.Configuration.GetConnectionString("LinkShort")));
 
 builder.Services.AddScoped <UrlShorteningService>();
 
