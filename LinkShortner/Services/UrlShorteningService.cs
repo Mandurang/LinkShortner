@@ -10,6 +10,11 @@ namespace LinkShortner.Services
         private readonly Random _random = new Random();
         private readonly ApplicationDbContext _dbContext;
 
+        public UrlShorteningService(ApplicationDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
         public async Task<string> GenerateUniqueCode()
         {
             var codeChars = new char[NumberOfCharsInShortLink];
@@ -18,7 +23,7 @@ namespace LinkShortner.Services
             {
                 for (var i = 0; i < NumberOfCharsInShortLink; i++)
                 {
-                    var randomIndex = _random.Next(Alphabet.Length - 1);
+                    var randomIndex = _random.Next(Alphabet.Length);
 
                     codeChars[i] = Alphabet[randomIndex];
                 }

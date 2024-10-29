@@ -19,7 +19,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(o =>
 
 builder.Services.AddScoped <UrlShorteningService>();
 
-var app = builder.Build();
+var app = builder.Build();      
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -36,7 +36,7 @@ app.MapPost("api/shorten", async (
     ApplicationDbContext dbContext,
     HttpContext httpContext) =>
 {
-    if (Uri.TryCreate(request.Url, UriKind.Absolute, out _))
+    if (!Uri.TryCreate(request.Url, UriKind.Absolute, out _))
     {
         return Results.BadRequest("The specified URL is invalid.");
     }
@@ -49,7 +49,7 @@ app.MapPost("api/shorten", async (
         LongUrl = request.Url,
         Code = code,
         ShortUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/api/{code}",
-        CreatedOnUtc = DateTime.Now
+        CreatedOnUtc = DateTime.Now.ToUniversalTime()
     };
 
     dbContext.ShortenedUrls.Add(shortenedUrl);
@@ -57,6 +57,20 @@ app.MapPost("api/shorten", async (
     await dbContext.SaveChangesAsync();
 
     return Results.Ok(shortenedUrl.ShortUrl);
+});
+
+
+app.MapGet("api/{code}", async (string code, ApplicationDbContext dbContext) =>
+{
+    var shortenedUrl = await dbContext.ShortenedUrls
+        .FirstOrDefaultAsync(s => s.Code == code);
+
+    if (shortenedUrl is null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Redirect(shortenedUrl.LongUrl);
 });
 
 app.UseHttpsRedirection();
